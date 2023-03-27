@@ -1,0 +1,136 @@
+---
+title: "Plots_interaction"
+author: "Rob van der Wielen"
+date: "2023-03-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(gridExtra)
+```
+
+#--- Loading in Data ---#
+
+```{r}
+regressionData <- read.csv("RegressionData.csv")
+
+```
+
+#--- Creating interaction plot for genre variable ---#
+
+```{r}
+#creating interaction plots
+pdf("interaction_genre1.pdf") 
+# calculating mean and SD
+mean <- mean(regressionData$Holiday_distance)
+sd <- sd(regressionData$Holiday_distance)
+
+above <- regressionData[regressionData$Holiday_distance > mean + sd, ]
+below <- regressionData[regressionData$Holiday_distance < mean - sd, ]
+at  <- regressionData[regressionData$Holiday_distance >= mean - sd & regressionData$Holiday_distance <= mean + sd, ]
+
+# plot interactions
+p1 <- ggplot(above, aes(x = AVG_Ngenre_comp, y = cumulative_rank)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  ggtitle("+1SD Holiday Distance")
+
+p2 <- ggplot(below, aes(x = AVG_Ngenre_comp, y = cumulative_rank)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  ggtitle("-1SD Mean Holiday Distance")
+
+p3 <- ggplot(at, aes(x = AVG_Ngenre_comp, y = cumulative_rank)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  ggtitle("Mean Holiday Distance")
+
+#Integrate in one plot
+grid.arrange(p1, p2, p3, ncol = 3)
+dev.off()
+
+```
+
+#--- Creating interaction plot for genre variable---#
+
+```{r}
+#creating interaction plots
+
+pdf("interaction_genre2.pdf") 
+# calculating mean and SD
+mean <- mean(regressionData$Holiday_distance)
+sd <- sd(regressionData$Holiday_distance)
+
+# plot interactions
+regressionData$hd_level <- ifelse(regressionData$Holiday_distance > mean + sd, "+1SD Mean", 
+                           ifelse(regressionData$Holiday_distance < mean - sd, "-1SD Mean", "Mean"))
+
+library(ggplot2)
+ggplot(regressionData, aes(x = AVG_Ngenre_comp, y = cumulative_rank, color = hd_level)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(color = "Holiday Distance Level") +
+  theme(legend.position = "bottom")
+dev.off()
+```
+
+#--- Creating interaction plot for MPAA variable---#
+
+```{r}
+#creating interaction plots
+pdf("interaction_mpaa1.pdf") 
+# calculating mean and SD
+mean <- mean(regressionData$Holiday_distance)
+sd <- sd(regressionData$Holiday_distance)
+
+# plot interactions
+regressionData$hd_level <- ifelse(regressionData$Holiday_distance > mean + sd, "-1SD Mean", 
+                           ifelse(regressionData$Holiday_distance < mean - sd, "1+SD Mean", "Mean"))
+
+library(ggplot2)
+ggplot(regressionData, aes(x = AVG_Nmpaa_comp, y = cumulative_rank, color = hd_level)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(color = "Holiday Distance Level") +
+  theme(legend.position = "bottom")
+dev.off()
+```
+
+#--- Creating interaction plot for MPAA variable---#
+
+```{r}
+#creating interaction plots
+pdf("interaction_mpaa2.pdf") 
+# calculating mean and SD
+mean <- mean(regressionData$Holiday_distance)
+sd <- sd(regressionData$Holiday_distance)
+
+above <- regressionData[regressionData$Holiday_distance > mean + sd, ]
+below <- regressionData[regressionData$Holiday_distance < mean - sd, ]
+at <- regressionData[regressionData$Holiday_distance >= mean - sd & regressionData$Holiday_distance <= mean + sd, ]
+
+# plot interactions
+p1 <- ggplot(above, aes(x = AVG_Nmpaa_comp, y = cumulative_rank)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  ggtitle("+1SD Holiday Distance")
+
+p2 <- ggplot(below, aes(x = AVG_Nmpaa_comp, y = cumulative_rank)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  ggtitle("-1SD Holiday Distance")
+
+p3 <- ggplot(at, aes(x = AVG_Nmpaa_comp, y = cumulative_rank)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  ggtitle("Mean Holiday Distance")
+
+#Integrate in one plot
+grid.arrange(p1, p2, p3, ncol = 3)
+dev.off()
+```

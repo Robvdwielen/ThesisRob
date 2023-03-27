@@ -1,0 +1,253 @@
+---
+title: "Analysis"
+author: "Rob van der Wielen"
+date: "2023-03-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#--- Install packages ---#
+
+```{r}
+install.packages("modelsummary")
+```
+
+#--- Libraries---#
+
+```{r}
+library(modelsummary)
+```
+
+
+#--- Loading in Data ---#
+
+```{r}
+regressionData <- read.csv("RegressionData.csv")
+
+#remove column "X"
+regressionData <- regressionData %>%
+  select(!X)
+
+plot(regressionData$AVG_Ngenre_comp, regressionData$cumulative_rank)
+## abline(interceptvalue, linearslopevalue)
+# for support = mean -1SD
+abline(24.85, 1) 
+# for support = mean
+abline(62.11, -.09, col='blue') 
+# for support = mean +1SD
+abline(99,37, -1.19, col='red') 
+
+
+```
+
+```{r}
+install.packages("ggplot2")
+
+library(ggplot2)
+```
+
+```{r}
+
+# Calculate mean and standard deviation of Holiday_distance
+hd_mean <- mean(regressionData$Holiday_distance)
+hd_sd <- sd(regressionData$Holiday_distance)
+
+# Create three subsets of the data based on Holiday_distance level
+above_hd <- regressionData[regressionData$Holiday_distance > hd_mean + hd_sd, ]
+below_hd <- regressionData[regressionData$Holiday_distance < hd_mean - hd_sd, ]
+at_hd <- regressionData[regressionData$Holiday_distance >= hd_mean - hd_sd & regressionData$Holiday_distance <= hd_mean + hd_sd, ]
+
+# Create three interaction plots, one for each level of Holiday_distance
+p1 <- ggplot(above_hd, aes(x = AVG_Ngenre_comp, y = cumulative_rank)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  ggtitle("Above Mean Holiday Distance")
+
+p2 <- ggplot(below_hd, aes(x = AVG_Ngenre_comp, y = cumulative_rank)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  ggtitle("Below Mean Holiday Distance")
+
+p3 <- ggplot(at_hd, aes(x = AVG_Ngenre_comp, y = cumulative_rank)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  ggtitle("Mean Holiday Distance")
+
+# Arrange the plots in a grid using the gridExtra package
+library(gridExtra)
+grid.arrange(p1, p2, p3, ncol = 3)
+
+```
+
+
+#--- Model 1 (without interaction) ---#
+```{r}
+model1 <- lm(log(cumulative_rank) ~ 
+               AVG_Nmpaa_comp + 
+               AVG_Ngenre_comp + 
+               rating + 
+               exclusive + 
+               Type + 
+               sequel, 
+             data = regressionData)
+summary(model1) 
+
+```
+
+
+#--- Model 2 (with interaction) ---#
+```{r}
+model2 <- lm(log(cumulative_rank) ~ 
+               AVG_Nmpaa_comp*Holiday_distance+ 
+               rating + 
+               exclusive + 
+               Type + 
+               sequel, 
+             data = regressionData)
+summary(model2) 
+```
+
+```{r}
+model3 <- lm(log(cumulative_rank) ~ 
+               AVG_Ngenre_comp*Holiday_distance+ 
+               rating + 
+               exclusive + 
+               Type + 
+               sequel, 
+             data = regressionData)
+summary(model3) 
+```
+
+
+#--- Model 4 (with interaction) ---#
+```{r}
+
+model4 <- lm(log(cumulative_rank) ~ 
+               rating + 
+               exclusive + 
+               Type + 
+               sequel, 
+             data = regressionData)
+summary(model4) 
+```
+
+
+
+
+#--- Model 5 (with interaction) ---#
+```{r}
+
+model5 <- lm(log(cumulative_rank) ~ 
+              AVG_Nmpaa_comp*Holiday_distance+ 
+              AVG_Ngenre_comp*Holiday_distance+ 
+               rating + 
+               exclusive + 
+               Type + 
+               sequel, 
+             data = regressionData)
+summary(model5) 
+```
+
+
+#--- F change ---#
+```{r}
+
+anova(model2, model4, test = "F")
+```
+
+
+```{r}
+install.packages("jtools")
+install.packages("interactions")
+```
+
+```{r}
+# plot the data with regression lines for high and low moderator values
+library(ggplot2)
+
+interact_plot(model2, pred = AVG_number_same_mpaa, modx = Holiday_distance)
+```
+
+
+
+```{r}
+
+#insert models 
+library(flextable)
+models <- list("Model 1"=model1, "Model 2"=model2, "Model 3"=model3)
+
+
+gm <- tibble::tribble(
+  ~raw, ~clean, ~fmt,
+  "nobs", "N", 0,
+  "r.squared", "R<sup>2</sup>", 3,
+  "adj.r.squared", "Adjusted R<sup>2</sup>", 3,
+  "F", "F statistic", 3)
+
+
+statistical_model <- modelsummary(models,
+                                  coef_rename = c('(Intercept)' = 'Intercept', 
+                                                  'AVG_Ngenre_comp' = 'Amount competitor genre videos',
+                                                  'AVG_Nmpaa_comp' = 'Amount competitor MPAA videos',
+                                                  'Holiday_distance' = 'Holiday distance',
+                                                  'rating' = 'Rating',
+                                                  'exclusive' = 'Netflix Exclusive',
+                                                  'Type' = 'Movie',
+                                                  'sequel' = 'Sequel',
+                                                  'AVG_Ngenre_comp:Holiday_distance' = 'Amount competitor genre videos * Holiday Distance',
+                                                   'AVG_Nmpaa_comp:Holiday_distance' = 'Amount competitor MPAA videos * Holiday Distance'),estimate = "{estimate}{stars}",
+                                  fmt = 3,
+                                  stars = c(' ∙' = 0.1, '*' = 0.05, '**' = 0.01, '***' = 0.01),
+                                  gof_map = gm,
+                                  output = "table.docx",
+                                  notes = 'Note: The dependent variable in all the models is the cumulative weeks spend in the Netflix top ten. The dependent variable is log-transformed.')
+
+statistical_model
+
+```
+
+
+
+```{r}
+#insert models 
+library(flextable)
+models <- list("Model 3"=model3)
+
+
+gm <- tibble::tribble(
+  ~raw, ~clean, ~fmt,
+  "nobs", "N", 0,
+  "r.squared", "R<sup>2</sup>", 3,
+  "adj.r.squared", "Adjusted R<sup>2</sup>", 3,
+  "F", "F statistic", 3)
+
+
+statistical_model_3 <- modelsummary(models,
+                                  coef_rename = c('(Intercept)' = 'Intercept', 
+                                                  'AVG_Ngenre_comp' = 'Amount competitor genre videos',
+                                                  'AVG_Nmpaa_comp' = 'Amount competitor MPAA videos',
+                                                  'Holiday_distance' = 'Holiday distance',
+                                                  'rating' = 'Rating',
+                                                  'exclusive' = 'Netflix Exclusive',
+                                                  'Type' = 'Movie',
+                                                  'sequel' = 'Sequel',
+                                                  'Holiday_distance:AVG_Ngenre_comp' = 'Amount competitor genre videos * Holiday Distance',
+                                                   'AVG_Nmpaa_comp:Holiday_distance' = 'Amount competitor MPAA videos * Holiday Distance'),estimate = "{estimate}{stars}",
+                                  fmt = 3,
+                                  stars = c(' ∙' = 0.1, '*' = 0.05, '**' = 0.01, '***' = 0.01),
+                                  gof_map = gm,
+                                  output = "table3.docx",
+                                  notes = 'Note: The dependent variable in all the models is the cumulative weeks spend in the Netflix top ten. The dependent variable is log-transformed.')
+
+statistical_model_3
+
+```
+
+
+
+
+
+

@@ -1,0 +1,228 @@
+---
+title: "Checking_assumptions"
+author: "Rob van der Wielen"
+date: "2023-03-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+install.packages("olsrr")
+```
+
+#--- Load libraries ---#
+```{r}
+library(readxl)
+library(tidyverse)
+library(olsrr)
+
+```
+
+#--- Loading in Data ---#
+
+```{r}
+netflix_data_complete <- read.csv("C:/Users/Systeembeheer/OneDrive - Tilburg University/Documenten/Master/Marketing Analytics/Thesis/Thesis_R/netflix_data_complete.csv", na.strings=c("", "NA"))
+
+#remove column "X"
+netflix_data_complete <- netflix_data_complete %>%
+  select(!X)
+
+summary(netflix_data_complete)
+```
+
+
+#--- Loading models ---#
+
+*Loading in the models to check the assumptions*
+
+# Model 1 without log transformation
+```{r}
+lmNetflix_1 = lm(cumulative_rank ~ AVG_Nmpaa_comp + AVG_Ngenre_comp + rating + exclusive + Type + sequel, data = netflix_data_complete) #Create the linear regression
+summary(lmNetflix_1) #Review the results
+```
+
+# Full model (Model 2) without log transformation
+```{r}
+lmNetflix_2 = lm(cumulative_rank ~ AVG_Nmpaa_comp*Holiday_distance + AVG_Ngenre_comp*Holiday_distance + rating + exclusive + Type + sequel, data = netflix_data_complete) #Create the linear regression
+summary(lmNetflix_2) #Review the results
+```
+
+
+# Model 1 with log transformation
+```{r}
+lmNetflix_log_1 = lm(log(cumulative_rank) ~ AVG_Nmpaa_comp + AVG_Ngenre_comp + rating + exclusive + Type + sequel, data = netflix_data_complete) #Create the linear regression
+summary(lmNetflix_log_1) #Review the results
+```
+
+
+# Full model (model 2) with log transformation
+```{r}
+lmNetflix_log_2 = lm(log(cumulative_rank) ~ AVG_Nmpaa_comp*Holiday_distance + AVG_Ngenre_comp*Holiday_distance + rating + exclusive + Type + sequel, data = netflix_data_complete) #Create the linear regression
+summary(lmNetflix_log_2) #Review the results
+```
+
+
+#--- Checking assumptions ---#
+
+#--- linearity assumption ---#
+
+# Linearity test on model 2 without log transformation
+```{r}
+pdf("linearityModel_2.pdf") 
+plot(lmNetflix_1)
+# Close the pdf file
+dev.off() 
+
+```
+*Does not look completely linear*
+
+# Linearity test on model 2 with log transformation
+```{r}
+pdf("linearityModel_log_2.pdf") 
+plot(lmNetflix_log)
+# Close the pdf file
+dev.off() 
+
+```
+
+#---Normality assumption ---#
+
+# conducting a skewness test
+```{r}
+res1  <- resid(lmNetflix_log_1)
+skewness(res1)
+```
+
+# Normality assumption, conducting a skewness test
+```{r}
+res2  <- resid(lmNetflix_log_2)
+skewness(res2)
+```
+*The data a moderate negatively skewed distribution, which means that in the normal distribution, it has a longer left tail. But not higher than cutoff of 1 or -1*
+
+#--- Multicollinearity ---#
+
+# Checking for multicollinearity using VIF
+```{r}
+library(car)
+VIF_scores <- as.data.frame(vif(lmNetflix_log_2))
+VIF_scores
+```
+*No value above cut-off of ten, so all good*
+
+# correlation matrix
+```{r}
+res <- cor(netflix_data_complete[3:10])
+
+correlation_table <- as.data.frame(round(res, 2))
+
+```
+*also looks good*
+
+#--- Influential observations ---#
+
+*To find the possible influential observation I used a method from my Data Science & Society master.*
+
+# Studentized residuals to find outliers
+```{r}
+sr0 <- rstudent(lmNetflix_log_2)
+
+plot(sr0)
+
+findBiggest <- function(x, n)
+    as.numeric(names(sort(abs(x), decreasing = TRUE)[1 : n]))
+
+badSr <- findBiggest(sr0, 3)
+badSr
+
+```
+*Two or three possible outliers (> threshold of three). Observations 398 & 65*
+
+*additional check*
+```{r}
+ols_plot_resid_stud(lmNetflix_log_2)
+```
+*No value above threshold*
+
+
+# index plot to fiend high leverage points
+```{r}
+lv0 <- hatvalues(lmNetflix_log_2)
+
+lv0 <- hatvalues(lmNetflix_log_2)
+# Plot the high leverage points using cut-off (p+1)/n
+sample_size <- nrow(netflix_data_complete)
+plot(lv0, pch=".", cex=2, main="High leverage points")  
+text(x=1:length(lv0)+1, y=lv0, labels=ifelse(lv0>(length(coef(lmNetflix_log_2))+1)/sample_size, names(lv0),""), col="red")
+```
+*These values could be potential influential when the cutoff (p+1)/n is used. These area lot*
+
+#Additional check 
+```{r}
+ols_plot_resid_lev(lmNetflix_log_2)
+```
+*Looks like that about 3 or 4 values are both outliers and have high leverage*
+
+
+# Cook's distance for influencial observations
+```{r}
+cooksd <- cooks.distance(lmNetflix_log_2)
+
+# Plot the Cook's Distance using the traditional 4/n criterion
+sample_size <- nrow(netflix_data_complete)
+plot(cooksd, pch=".", cex=2, main="Influential Obs by Cooks distance")  # plot cook's distance
+abline(h = 4/sample_size, col="red")  # add cutoff line
+text(x=1:length(cooksd)+1, y=cooksd, labels=ifelse(cooksd>4/sample_size, names(cooksd),""), col="red")
+
+badCd <- findBiggest(cooksd, 3)
+badCd
+```
+*18 observations as influential*
+
+
+# also checking with the DFFITS
+```{r}
+ols_plot_dffits(lmNetflix_log_2)
+
+```
+*also 18 observations as influential*
+
+#--- Analysis without outliers ---#
+*remove three most influential*
+```{r}
+m0.3 <- update(lmNetflix_log_2, data = netflix_data_complete[-badCd, ])
+summary(m0.3)
+
+```
+*The R-squared from the cleaned model is larger as are all of the slopes. So these three observations will be removed from the data set*
+
+#--- Remove influencial observations ---#
+
+```{r}
+netflix_data_complete <- netflix_data_complete[-badCd, ]
+```
+
+
+#--- Plot influential observations ---#
+
+```{r}
+pdf("cooksd.pdf") 
+cooksd <- cooks.distance(lmNetflix_log_2)
+
+# Plot the Cook's Distance using the traditional 4/n criterion
+sample_size <- nrow(netflix_data_complete)
+plot(cooksd, pch=".", cex=2, main="Influential Obs by Cooks distance")  # plot cook's distance
+text(x=1:length(cooksd)+1, y=cooksd, labels=ifelse(cooksd>0.03, names(cooksd),""), col="red")
+dev.off() 
+```
+
+
+```{r}
+write.csv(netflix_data_complete, "RegressionData.csv")
+```
+
+

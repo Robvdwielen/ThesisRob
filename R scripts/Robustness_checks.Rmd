@@ -1,0 +1,44 @@
+---
+title: "Robustness_checks"
+author: "Rob van der Wielen"
+date: "2023-03-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# excluding all 18 observations based on this plot below.
+```{r}
+cooksd <- cooks.distance(lmNetflix_log_2)
+
+# Plot the Cook's Distance using the traditional 4/n criterion
+sample_size <- nrow(netflix_data_complete)
+plot(cooksd, pch="*", cex=2, main="Influential Obs by Cooks distance")  # plot cook's distance
+abline(h = 4/sample_size, col="red")  # add cutoff line
+text(x=1:length(cooksd)+1, y=cooksd, labels=ifelse(cooksd>4/sample_size, names(cooksd),""), col="red")  # add labels
+```
+
+
+
+# Cook's distance for influencial observations
+```{r}
+# Compute Cook's Distance (Global)
+cd2  <- cooks.distance(lmNetflix_log_2)
+plot(cd2)
+
+badCd <- findBiggest(cd2, 18)
+badCd
+```
+
+# compare results with normal model
+
+* R squared goes up. but coeffients go down. 
+
+```{r}
+m0.3 <- update(lmNetflix_log_1, data = netflix_data_complete[-badCd, ])
+summary(m0.3)
+```
+
+
