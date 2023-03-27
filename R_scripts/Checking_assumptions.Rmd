@@ -19,7 +19,7 @@ install.packages("olsrr")
 library(readxl)
 library(tidyverse)
 library(olsrr)
-
+library(moments)
 ```
 
 #--- Loading in Data ---#
@@ -129,21 +129,24 @@ correlation_table <- as.data.frame(round(res, 2))
 
 # Studentized residuals to find outliers
 ```{r}
+pdf("outliers_plot1.pdf") 
 sr0 <- rstudent(lmNetflix_log_2)
 
 plot(sr0)
-
+dev.off()
 findBiggest <- function(x, n)
     as.numeric(names(sort(abs(x), decreasing = TRUE)[1 : n]))
 
-badSr <- findBiggest(sr0, 3)
+badSr <- findBiggest(sr0, 5)
 badSr
+
 
 ```
 *Two or three possible outliers (> threshold of three). Observations 398 & 65*
 
 *additional check*
 ```{r}
+pdf("outliers_plot2.pdf") 
 ols_plot_resid_stud(lmNetflix_log_2)
 ```
 *No value above threshold*
@@ -151,6 +154,7 @@ ols_plot_resid_stud(lmNetflix_log_2)
 
 # index plot to fiend high leverage points
 ```{r}
+pdf("high_leverag1.pdf") 
 lv0 <- hatvalues(lmNetflix_log_2)
 
 lv0 <- hatvalues(lmNetflix_log_2)
@@ -158,18 +162,24 @@ lv0 <- hatvalues(lmNetflix_log_2)
 sample_size <- nrow(netflix_data_complete)
 plot(lv0, pch=".", cex=2, main="High leverage points")  
 text(x=1:length(lv0)+1, y=lv0, labels=ifelse(lv0>(length(coef(lmNetflix_log_2))+1)/sample_size, names(lv0),""), col="red")
+dev.off()
+
 ```
 *These values could be potential influential when the cutoff (p+1)/n is used. These area lot*
 
 #Additional check 
 ```{r}
+pdf("high_leverag_outliers.pdf") 
 ols_plot_resid_lev(lmNetflix_log_2)
+dev.off()
 ```
 *Looks like that about 3 or 4 values are both outliers and have high leverage*
 
 
 # Cook's distance for influencial observations
 ```{r}
+pdf("Cooks_D.pdf") 
+
 cooksd <- cooks.distance(lmNetflix_log_2)
 
 # Plot the Cook's Distance using the traditional 4/n criterion
@@ -177,16 +187,21 @@ sample_size <- nrow(netflix_data_complete)
 plot(cooksd, pch=".", cex=2, main="Influential Obs by Cooks distance")  # plot cook's distance
 abline(h = 4/sample_size, col="red")  # add cutoff line
 text(x=1:length(cooksd)+1, y=cooksd, labels=ifelse(cooksd>4/sample_size, names(cooksd),""), col="red")
+dev.off()
 
 badCd <- findBiggest(cooksd, 3)
 badCd
+
 ```
 *18 observations as influential*
 
 
 # also checking with the DFFITS
 ```{r}
+pdf("DFFITS.pdf") 
+
 ols_plot_dffits(lmNetflix_log_2)
+dev.off()
 
 ```
 *also 18 observations as influential*
@@ -194,8 +209,8 @@ ols_plot_dffits(lmNetflix_log_2)
 #--- Analysis without outliers ---#
 *remove three most influential*
 ```{r}
-m0.3 <- update(lmNetflix_log_2, data = netflix_data_complete[-badCd, ])
-summary(m0.3)
+model_clean <- update(lmNetflix_log_1, data = netflix_data_complete)
+summary(model_clean)
 
 ```
 *The R-squared from the cleaned model is larger as are all of the slopes. So these three observations will be removed from the data set*
@@ -210,7 +225,7 @@ netflix_data_complete <- netflix_data_complete[-badCd, ]
 #--- Plot influential observations ---#
 
 ```{r}
-pdf("cooksd.pdf") 
+pdf("cooksd2.pdf") 
 cooksd <- cooks.distance(lmNetflix_log_2)
 
 # Plot the Cook's Distance using the traditional 4/n criterion

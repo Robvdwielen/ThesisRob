@@ -12,7 +12,6 @@ knitr::opts_chunk$set(echo = TRUE)
 install.packages("dplyr")
 install.packages("tidyr")
 install.packages("stringr")
-
 ```
 ```{r}
 library(dplyr)

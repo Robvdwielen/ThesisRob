@@ -148,6 +148,9 @@ netflix_data_complete %>%
 
 # Creating a boxplot for the cumulative rank splits up by type
 ```{r}
+dir.create("/data")
+
+pdf("boxplot_type.pdf") 
 # create separate dataframes for movies and TV shows
 movies <- subset(netflix_data_complete, Type == 1)
 tv_shows <- subset(netflix_data_complete, Type == 0)
@@ -156,6 +159,8 @@ tv_shows <- subset(netflix_data_complete, Type == 0)
 par(mfrow = c(2, 1))
 boxplot(movies$cumulative_rank, horizontal =TRUE, ylim = c(0, 20), ylab = "Movies") 
 boxplot(tv_shows$cumulative_rank, horizontal = TRUE, ylim = c(0, 20), sub = "Cumulative weeks", ylab = "TV-shows")
+dev.off() 
+
 ```
 
 

@@ -9,36 +9,105 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# excluding all 18 observations based on this plot below.
 ```{r}
-cooksd <- cooks.distance(lmNetflix_log_2)
-
-# Plot the Cook's Distance using the traditional 4/n criterion
-sample_size <- nrow(netflix_data_complete)
-plot(cooksd, pch="*", cex=2, main="Influential Obs by Cooks distance")  # plot cook's distance
-abline(h = 4/sample_size, col="red")  # add cutoff line
-text(x=1:length(cooksd)+1, y=cooksd, labels=ifelse(cooksd>4/sample_size, names(cooksd),""), col="red")  # add labels
+library(modelsummary)
 ```
 
 
+#--- Loading in Data ---#
 
-# Cook's distance for influencial observations
+```{r}
+regressionData <- read.csv("netflix_data_complete.csv")
+```
+
+#--- Running model 1 --#
+
+```{r}
+model1 <- lm(log(cumulative_rank) ~ 
+               AVG_Nmpaa_comp + 
+               AVG_Ngenre_comp + 
+               rating + 
+               exclusive + 
+               Type + 
+               sequel, 
+             data = regressionData)
+summary(model1) 
+
+```
+
+#--- Cook's distance for influencial observations ---#
 ```{r}
 # Compute Cook's Distance (Global)
 cd2  <- cooks.distance(lmNetflix_log_2)
-plot(cd2)
 
-badCd <- findBiggest(cd2, 18)
-badCd
+badCd_least <- findBiggest(cd2, 18)
+badCd_least
 ```
 
-# compare results with normal model
+#--- Cook's distance for influencial observations ---#
+```{r}
+# Compute Cook's Distance (Global)
+cd2  <- cooks.distance(lmNetflix_log_2)
 
-* R squared goes up. but coeffients go down. 
+badCd_current <- findBiggest(cd2, 3)
+badCd_current
+```
+
+#--- model without 18 influential observations --#
 
 ```{r}
-m0.3 <- update(lmNetflix_log_1, data = netflix_data_complete[-badCd, ])
-summary(m0.3)
+model_N_390 <- update(lmNetflix_log_1, data = netflix_data_complete[-badCd_least, ])
+summary(model_N_390)
 ```
+
+#--- model without 3 influential observations --#
+
+```{r}
+model_N_405 <- update(lmNetflix_log_1, data = netflix_data_complete[-badCd_current, ])
+summary(model_N_405)
+```
+
+#--- full model --#
+
+```{r}
+summary(model1)
+```
+
+#--- exporting models --#
+```{r}
+#insert models 
+models <- list("Model N = 390"=model_N_390, "Model N = 405"=model_N_405, "Model N = 408"=model1)
+
+
+gm <- tibble::tribble(
+  ~raw, ~clean, ~fmt,
+  "nobs", "N", 0,
+  "r.squared", "R<sup>2</sup>", 3,
+  "adj.r.squared", "Adjusted R<sup>2</sup>", 3,
+  "F", "F statistic", 3)
+
+
+statistical_model_3 <- modelsummary(models,
+                                  coef_rename = c('(Intercept)' = 'Intercept', 
+                                                  'AVG_Ngenre_comp' = 'Amount competitor genre videos',
+                                                  'AVG_Nmpaa_comp' = 'Amount competitor MPAA videos',
+                                                  'Holiday_distance' = 'Holiday distance',
+                                                  'rating' = 'Rating',
+                                                  'exclusive' = 'Netflix Exclusive',
+                                                  'Type' = 'Movie',
+                                                  'sequel' = 'Sequel',
+                                                  'Holiday_distance:AVG_Ngenre_comp' = 'Amount competitor genre videos * Holiday Distance',
+                                                   'AVG_Nmpaa_comp:Holiday_distance' = 'Amount competitor MPAA videos * Holiday Distance'),estimate = "{estimate}{stars}",
+                                  fmt = 3,
+                                  stars = c(' ∙' = 0.1, '*' = 0.05, '**' = 0.01, '***' = 0.01),
+                                  gof_map = gm,
+                                  output = "table_influential_observations.docx",
+                                  notes = 'Note: The dependent variable in all the models is the cumulative weeks spend in the Netflix top ten. The dependent variable is log-transformed.')
+
+statistical_model_3
+
+```
+
+
 
 
