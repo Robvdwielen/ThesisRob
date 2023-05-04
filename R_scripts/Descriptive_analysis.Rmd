@@ -18,11 +18,11 @@ library(vtable)
 
 ```{r}
 # Load in data set
-all_platforms_cleaned <- read.csv("C:/Users/Systeembeheer/OneDrive - Tilburg University/Documenten/Master/Marketing Analytics/Thesis/Thesis_R/all_platforms_cleaned.csv", sep = ",", na.strings=c("", "NA"))
+all_platforms_cleaned <- read.csv("C:/Users/Systeembeheer/OneDrive - Tilburg University/Documenten/Master/Marketing Analytics/Thesis/ThesisRob/ThesisRob/Datasets/Cleaned_data/all_platforms_cleaned.csv", sep = ",", na.strings=c("", "NA"))
 summary(all_platforms_cleaned)
 
 # Load in data set
-netflix_data_complete <- read.csv("C:/Users/Systeembeheer/OneDrive - Tilburg University/Documenten/Master/Marketing Analytics/Thesis/Thesis_R/netflix_data_complete.csv", sep = ",", na.strings=c("", "NA"))
+netflix_data_complete <- read.csv("C:/Users/Systeembeheer/OneDrive - Tilburg University/Documenten/Master/Marketing Analytics/Thesis/ThesisRob/ThesisRob/Datasets/Cleaned_data/netflix_data_complete.csv", sep = ",", na.strings=c("", "NA"))
 summary(netflix_data_complete)
 ```
 
@@ -30,28 +30,42 @@ summary(netflix_data_complete)
 *Somehow in the all platforms data set there are still three rows with NAs. These are removed from the data set*
 ```{r}
 #removing NA
-all_platforms_cleaned <- na.omit(all_platforms_cleaned)
+all_platforms_cleaned <- all_platforms_cleaned %>%
+  select(c(2:10, 38:44)) 
+all_platforms_cleaned <- all_platforms_cleaned %>%
+  select(!c(rank, cumulative_rank, week_num)) %>%
+  distinct()
+
 ```
 
 
 # number of distinct videos for each platform
 ```{r}
 # Create a table of average ratings by platform
-avg_ratings <- all_platforms_cleaned %>% 
+number_platforms <- all_platforms_cleaned %>% 
   group_by(platform) %>% 
   summarize(count = n()) %>% 
-  arrange(count)
+  arrange(count) %>%
+  distinct()
 ```
 
 ```{r}
+# dummy code genre
+all_platforms_cleaned <- all_platforms_cleaned %>% separate_rows(genre, sep = ',') %>% mutate(val = 1) %>% 
+  pivot_wider(names_from = genre, values_from = val, values_fill = list(val = 0)) 
+head(all_platforms_cleaned)
+  
+all_platforms_cleaned <- all_platforms_cleaned %>%
+  select(!21)
+
 # join the two data frames together
 # Transform data set to wider format 
-platforms_wider_count <- avg_ratings %>%
-  pivot_wider(names_from = platform, values_from = count)
+Genre_columns <- paste("genre_", colnames(all_platforms_cleaned[13:20]))
+Genre_columns <- sub(" ", "", Genre_columns)
 
-empty_col <- ""
-platforms_wider_count <- cbind(empty_col, platforms_wider_count)
-colnames(platforms_wider_count)[1] <- "genre_mpaa"
+colnames(all_platforms_cleaned)[13:20] <- Genre_columns
+
+
 ```
 
 
@@ -64,8 +78,7 @@ genre_count <- all_platforms_cleaned %>%
   group_by(genre) %>% 
   summarize(count = n()) %>% 
   ungroup() %>% 
-  arrange(desc(count)) %>%
-  head(8)
+  arrange(desc(count))
 
 # Create a table of count of titles by platform, and genre. Also filtering only the top 10 most occurring genres across all platforms to make it not to long. 
 genre_count_by_platform <- all_platforms_cleaned %>% 
@@ -104,7 +117,7 @@ platforms_wider_mpaa <- mpaa_count_by_platform %>%
 
 ```{r}
 # join the two data frames together
-all_platforms_genre_mpaa <- rbind(platforms_wider_count, platforms_wider_genre, platforms_wider_mpaa)
+all_platforms_genre_mpaa <- rbind(platforms_wider_genre, platforms_wider_mpaa)
 ```
 
 ```{r}
@@ -148,9 +161,9 @@ netflix_data_complete %>%
 
 # Creating a boxplot for the cumulative rank splits up by type
 ```{r}
-dir.create("/data")
+dir.create("C:/Users/Systeembeheer/OneDrive - Tilburg University/Documenten/Master/Marketing Analytics/Thesis/ThesisRob/ThesisRob/R_scripts/plots")
 
-pdf("boxplot_type.pdf") 
+pdf("plots/boxplot_type.pdf") 
 # create separate dataframes for movies and TV shows
 movies <- subset(netflix_data_complete, Type == 1)
 tv_shows <- subset(netflix_data_complete, Type == 0)

@@ -17,7 +17,7 @@ library(gridExtra)
 #--- Loading in Data ---#
 
 ```{r}
-regressionData <- read.csv("RegressionData.csv")
+regressionData <- read.csv("C:/Users/Systeembeheer/OneDrive - Tilburg University/Documenten/Master/Marketing Analytics/Thesis/ThesisRob/ThesisRob/Datasets/Cleaned_data/RegressionData.csv")
 
 ```
 
@@ -25,7 +25,7 @@ regressionData <- read.csv("RegressionData.csv")
 
 ```{r}
 #creating interaction plots
-pdf("interaction_genre1.pdf") 
+pdf("plots/interaction_genre1.pdf") 
 # calculating mean and SD
 mean <- mean(regressionData$Holiday_distance)
 sd <- sd(regressionData$Holiday_distance)
@@ -61,7 +61,7 @@ dev.off()
 ```{r}
 #creating interaction plots
 
-pdf("interaction_genre2.pdf") 
+pdf("plots/interaction_genre2.pdf") 
 # calculating mean and SD
 mean <- mean(regressionData$Holiday_distance)
 sd <- sd(regressionData$Holiday_distance)
@@ -83,7 +83,7 @@ dev.off()
 
 ```{r}
 #creating interaction plots
-pdf("interaction_mpaa1.pdf") 
+pdf("plots/interaction_mpaa1.pdf") 
 # calculating mean and SD
 mean <- mean(regressionData$Holiday_distance)
 sd <- sd(regressionData$Holiday_distance)
@@ -105,7 +105,7 @@ dev.off()
 
 ```{r}
 #creating interaction plots
-pdf("interaction_mpaa2.pdf") 
+pdf("plots/interaction_mpaa2.pdf") 
 # calculating mean and SD
 mean <- mean(regressionData$Holiday_distance)
 sd <- sd(regressionData$Holiday_distance)

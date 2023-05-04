@@ -26,89 +26,74 @@ library(flextable)
 #--- Loading in Data ---#
 
 ```{r}
-regressionData <- read.csv("RegressionData.csv")
+regressionData <- read.csv("C:/Users/Systeembeheer/OneDrive - Tilburg University/Documenten/Master/Marketing Analytics/Thesis/ThesisRob/ThesisRob/Datasets/Cleaned_data/RegressionData.csv")
+
+#remove column "X"
+regressionData <- regressionData %>%
+  select(!X)
+
+summary(regressionData)
 ```
 
 
-#--- Model 1 (without interaction) ---#
+#--- Model 1 (Only IV's) ---#
 ```{r}
 model1 <- lm(log(cumulative_rank) ~ 
-               AVG_Nmpaa_comp + 
-               AVG_Ngenre_comp + 
-               rating + 
-               exclusive + 
-               Type + 
-               sequel, 
+               AVG_Nmpaa_comp*Holiday_distance + 
+               AVG_Ngenre_comp*Holiday_distance, 
              data = regressionData)
 summary(model1) 
 
 ```
 
 
-#--- Model 2 (with interaction) ---#
+#--- Model 2 (with controls) ---#
 ```{r}
 
 model2 <- lm(log(cumulative_rank) ~ 
-              AVG_Nmpaa_comp*Holiday_distance+ 
-              AVG_Ngenre_comp*Holiday_distance+ 
-               rating + 
+              AVG_Nmpaa_comp * Holiday_distance+ 
+              AVG_Ngenre_comp * Holiday_distance+ 
+              rating + 
                exclusive + 
                Type + 
-               sequel, 
+               sequel,
              data = regressionData)
 summary(model2) 
 ``` 
 
 
-#--- Model 3 only control variables ---#
+#--- Model 4 (with genres and mpaa) ---#
 ```{r}
 
 model3 <- lm(log(cumulative_rank) ~ 
-               rating + 
+              AVG_Nmpaa_comp * Holiday_distance+ 
+              AVG_Ngenre_comp * Holiday_distance+ 
+              rating + 
                exclusive + 
                Type + 
-               sequel, 
+               sequel+
+               Drama+
+               Comedy+
+               Suspense+
+               Family+
+               Action+
+               Sci.Fi+
+               Romance+
+               Other+
+               mpaa_R_Restricted +
+               mpaa_G_General_audiences +
+               mpaa_PG_Parental_guidance_suggested +
+               mpaa_NC17_Adults_only+
+               mpaa_Not_Rated,
              data = regressionData)
 summary(model3) 
-```
-
-#--- Model 4 (with interaction mpaa rating) ---#
-```{r}
-model4 <- lm(log(cumulative_rank) ~ 
-               AVG_Nmpaa_comp*Holiday_distance+ 
-               rating + 
-               exclusive + 
-               Type + 
-               sequel, 
-             data = regressionData)
-summary(model4) 
-```
-
-#--- Model 5 (with interaction genre) ---#
-
-```{r}
-model5 <- lm(log(cumulative_rank) ~ 
-               AVG_Ngenre_comp*Holiday_distance+ 
-               rating + 
-               exclusive + 
-               Type + 
-               sequel, 
-             data = regressionData)
-summary(model5) 
-```
-
-
-
-#--- F change ---#
-```{r}
-anova(model2, model4, test = "F")
-```
+``` 
 
 
 #--- Creating model ---#
 ```{r}
 #insert models 
-models <- list("Model 1"=model1, "Model 2"=model2)
+models <- list("Model 1"=model1, "Model 2"=model2, "Model 3" = model3)
 
 
 gm <- tibble::tribble(
@@ -123,13 +108,24 @@ statistical_model <- modelsummary(models,
                                   coef_rename = c('(Intercept)' = 'Intercept', 
                                                   'AVG_Ngenre_comp' = 'Amount competitor genre videos',
                                                   'AVG_Nmpaa_comp' = 'Amount competitor MPAA videos',
+                                                  'Holiday_distance:AVG_Ngenre_comp  ' = 'Amount competitor genre videos * Holiday Distance',
+                                                   'AVG_Nmpaa_comp:Holiday_distance' = 'Amount competitor MPAA videos * Holiday Distance',
                                                   'Holiday_distance' = 'Holiday distance',
                                                   'rating' = 'Rating',
                                                   'exclusive' = 'Netflix Exclusive',
                                                   'Type' = 'Movie',
                                                   'sequel' = 'Sequel',
-                                                  'AVG_Ngenre_comp:Holiday_distance' = 'Amount competitor genre videos * Holiday Distance',
-                                                   'AVG_Nmpaa_comp:Holiday_distance' = 'Amount competitor MPAA videos * Holiday Distance'),estimate = "{estimate}{stars}",
+                                                  'genre_Action' = "Action",
+                                                  "genre_Crime" = "Crime",
+                                                  "genre_Thriller" = "Thriller",
+                                                  "genre_Comedy" = "Comedy",
+                                                  "genre_Drama" = "Drama",
+                                                  "genre_Other" = "Other genres",
+                                                  "mpaa_G_General_audiences" = "G - General Audiences",
+                                                  "mpaa_PG_Parental_guidance_suggested" = "PG - Parents guidance suggested",
+                                                  "mpaa_R_Restricted" = "R - Restricted for children", 
+                                                  "mpaa_NC17_Adults_only" = "NC17 - Adults only",
+                                                  "mpaa_Not_Rated" = "No MPAA rating"                                                  ),estimate = "{estimate}{stars}",
                                   fmt = 3,
                                   stars = c(' ∙' = 0.1, '*' = 0.05, '**' = 0.01, '***' = 0.01),
                                   gof_map = gm,
@@ -141,75 +137,4 @@ statistical_model
 ```
 
 
-
-```{r}
-#insert models 
-models <- list("Model 3"=model3)
-
-
-gm <- tibble::tribble(
-  ~raw, ~clean, ~fmt,
-  "nobs", "N", 0,
-  "r.squared", "R<sup>2</sup>", 3,
-  "adj.r.squared", "Adjusted R<sup>2</sup>", 3,
-  "F", "F statistic", 3)
-
-
-statistical_model_3 <- modelsummary(models,
-                                  coef_rename = c('(Intercept)' = 'Intercept', 
-                                                  'AVG_Ngenre_comp' = 'Amount competitor genre videos',
-                                                  'AVG_Nmpaa_comp' = 'Amount competitor MPAA videos',
-                                                  'Holiday_distance' = 'Holiday distance',
-                                                  'rating' = 'Rating',
-                                                  'exclusive' = 'Netflix Exclusive',
-                                                  'Type' = 'Movie',
-                                                  'sequel' = 'Sequel',
-                                                  'Holiday_distance:AVG_Ngenre_comp' = 'Amount competitor genre videos * Holiday Distance',
-                                                   'AVG_Nmpaa_comp:Holiday_distance' = 'Amount competitor MPAA videos * Holiday Distance'),estimate = "{estimate}{stars}",
-                                  fmt = 3,
-                                  stars = c(' ∙' = 0.1, '*' = 0.05, '**' = 0.01, '***' = 0.01),
-                                  gof_map = gm,
-                                  output = "table3.docx",
-                                  notes = 'Note: The dependent variable in all the models is the cumulative weeks spend in the Netflix top ten. The dependent variable is log-transformed.')
-
-statistical_model_3
-
-```
-
-
-
-#--- Creating model ---#
-```{r}
-#insert models 
-models <- list("Model 1"=model1, "Model 4"=model4, "Model 5"=model5)
-
-
-gm <- tibble::tribble(
-  ~raw, ~clean, ~fmt,
-  "nobs", "N", 0,
-  "r.squared", "R<sup>2</sup>", 3,
-  "adj.r.squared", "Adjusted R<sup>2</sup>", 3,
-  "F", "F statistic", 3)
-
-
-statistical_model <- modelsummary(models,
-                                  coef_rename = c('(Intercept)' = 'Intercept', 
-                                                  'AVG_Ngenre_comp' = 'Amount competitor genre videos',
-                                                  'AVG_Nmpaa_comp' = 'Amount competitor MPAA videos',
-                                                  'Holiday_distance' = 'Holiday distance',
-                                                  'rating' = 'Rating',
-                                                  'exclusive' = 'Netflix Exclusive',
-                                                  'Type' = 'Movie',
-                                                  'sequel' = 'Sequel',
-                                                  'AVG_Ngenre_comp:Holiday_distance' = 'Amount competitor genre videos * Holiday Distance',
-                                                   'AVG_Nmpaa_comp:Holiday_distance' = 'Amount competitor MPAA videos * Holiday Distance'),estimate = "{estimate}{stars}",
-                                  fmt = 3,
-                                  stars = c(' ∙' = 0.1, '*' = 0.05, '**' = 0.01, '***' = 0.01),
-                                  gof_map = gm,
-                                  output = "table.docx",
-                                  notes = 'Note: The dependent variable in all the models is the cumulative weeks spend in the Netflix top ten. The dependent variable is log-transformed.')
-
-statistical_model
-
-```
 

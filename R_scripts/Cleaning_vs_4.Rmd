@@ -13,6 +13,7 @@ install.packages("dplyr")
 install.packages("tidyr")
 install.packages("stringr")
 ```
+
 ```{r}
 library(dplyr)
 library(tidyr)
@@ -24,11 +25,11 @@ library(stringr)
 
 ```{r}
 # Load in dataset
-rank_info <- read.csv("C:/Users/Systeembeheer/OneDrive - Tilburg University/Documenten/Master/Marketing Analytics/Thesis/Thesis_R/rank_information_comp_vs6.csv", sep = ";", na.strings=c("", "NA"))
+rank_info <- read.csv("C:/Users/Systeembeheer/OneDrive - Tilburg University/Documenten/Master/Marketing Analytics/Thesis/ThesisRob/ThesisRob/Datasets/Raw_data/rank_information_comp_vs6.csv", sep = ";", na.strings=c("", "NA"))
 summary(rank_info)
 
 # Load in dataset
-video_info <- read.csv("C:/Users/Systeembeheer/OneDrive - Tilburg University/Documenten/Master/Marketing Analytics/Thesis/Thesis_R/video_information4.csv", sep = ";", na.strings=c("", "NA"))
+video_info <- read.csv("C:/Users/Systeembeheer/OneDrive - Tilburg University/Documenten/Master/Marketing Analytics/Thesis/ThesisRob/ThesisRob/Datasets/Raw_data/video_information4.csv", sep = ";", na.strings=c("", "NA"))
 summary(video_info)
 
 
@@ -101,6 +102,13 @@ head(video_info)
 
 ```
 
+
+# Keep rows
+```{r}
+keep_genres <- video_info %>%
+   select(title.name, genre)
+```
+
 ## Dummy code the genre variable
 *In this step I dummy code the genre variable for the entire dataset, this makes it easier for me to work with this variable*
 ```{r}
@@ -109,6 +117,7 @@ video_info <- video_info %>% separate_rows(genre, sep = ',') %>% mutate(val = 1)
   pivot_wider(names_from = genre, values_from = val, values_fill = list(val = 0)) 
 head(video_info)
 ```
+
 
 ## Dummy code the MPAA_rating varaible
 *Somehow when I try to dummy code the MPAA_rating variable, still get an error that says that there are duplicates, which means I can't dummy code this variable. So I added two steps in between that solve this problem.*
@@ -161,7 +170,7 @@ head(video_information_all_platforms)
 
 ```{r}
 # removing irrelevant levels of the MPAA rating
-remove_col <- c("X", "F", "12", "AO", "Approved", "Passed", "13+", "16+", "T", "MA-17")
+remove_col <- c("X", "F", "12", "AO", "Approved", "Passed", "13+", "16+", "T", "MA-17", "TV-13")
 
 video_information_all_platforms <- video_information_all_platforms %>%
   select(!remove_col)
@@ -177,12 +186,11 @@ colnames(video_information_all_platforms)[40] <- "TV_PG"
 colnames(video_information_all_platforms)[41] <- "TV_14"
 colnames(video_information_all_platforms)[43] <- "TV_MA"
 colnames(video_information_all_platforms)[46] <- "Not_rated"
-colnames(video_information_all_platforms)[47] <- "TV_13"
-colnames(video_information_all_platforms)[48] <- "TV_Y"
-colnames(video_information_all_platforms)[49] <- "TV_G"
-colnames(video_information_all_platforms)[50] <- "TV_V7_FV"
-colnames(video_information_all_platforms)[51] <- "TV_Y7"
-colnames(video_information_all_platforms)[52] <- "NC_17"
+colnames(video_information_all_platforms)[47] <- "TV_Y"
+colnames(video_information_all_platforms)[48] <- "TV_G"
+colnames(video_information_all_platforms)[49] <- "TV_V7_FV"
+colnames(video_information_all_platforms)[50] <- "TV_Y7"
+colnames(video_information_all_platforms)[51] <- "NC_17"
 ```
 
 ### merging MPAA rating dummy columns
@@ -193,7 +201,7 @@ colnames(video_information_all_platforms)[52] <- "NC_17"
 video_information_all_platforms_cleaned <- video_information_all_platforms %>%
   mutate(G_General_audiences = ifelse(G == 1 | TV_Y == 1 | TV_G == 1, 1, 0),
          PG_Parental_guidance_suggested = ifelse(PG == 1 | TV_Y7 == 1 | TV_V7_FV == 1 | TV_PG ==1, 1, 0),
-         PG13_Parents_strongly_cautioned = ifelse(PG_13 == 1 | TV_14 == 1 | TV_13 == 1, 1, 0),
+         PG13_Parents_strongly_cautioned = ifelse(PG_13 == 1 | TV_14 == 1, 1, 0),
          NC17_Adults_only = ifelse(NC_17 == 1 | TV_MA == 1, 1, 0),
          Not_Rated = ifelse(Not_rated == 1 | Unrated == 1 | NA.y == 1, 1, 0))
 ```
@@ -202,7 +210,7 @@ video_information_all_platforms_cleaned <- video_information_all_platforms %>%
 *I drop all the old columns, because they are now joined together into new columns. Also I drop the column NA.x for the genre dummies, because this is an empty column.*
 ```{r}
 #drop old columns
-col_to_drop <- c("G", "TV_Y", "TV_G","PG", "TV_Y7","TV_V7_FV", "PG_13", "TV_14", "TV_13", "NC_17", "TV_MA", "Not_rated", "Unrated", "NA.y", "TV_PG")
+col_to_drop <- c("G", "TV_Y", "TV_G","PG", "TV_Y7","TV_V7_FV", "PG_13", "TV_14", "NC_17", "TV_MA", "Not_rated", "Unrated", "NA.y", "TV_PG")
 
 video_information_all_platforms_cleaned <- video_information_all_platforms_cleaned %>%
   select(!col_to_drop) %>%
@@ -232,32 +240,59 @@ colnames(video_information_all_platforms_cleaned)
 ```
 
 
+
+```{r}
+# join datasets together
+video_information_all_platforms_cleaned_test <- video_information_all_platforms_cleaned %>% left_join(keep_genres, 
+           by=c('title.name'))
+head(video_information_all_platforms_cleaned_test)
+```
+
+```{r}
+unwanted_genres <- c("Sport", "News", "War", "History", "Reality-TV", "Fantasy", 
+                     "Game-Show", "Biography", "Short", "Documentary", "Film-Noir", 
+                     "Music", "Western", "Musical", "Talk-Show", "Horror")
+
+# remove unwanted genres and commas
+video_information_all_platforms_cleaned_test <- video_information_all_platforms_cleaned_test %>%
+  mutate(genre = gsub(paste(unwanted_genres, collapse = "|"), "", genre)) %>%
+  mutate(genre = gsub("Adventure", "Action", genre)) %>%
+  mutate(genre = gsub("Animation", "Family", genre)) %>%
+  mutate(genre = gsub("Crime", "Suspense", genre)) %>%
+  mutate(genre = gsub("Thriller", "Suspense", genre)) %>%
+  mutate(genre = gsub("Mystery", "Suspense", genre)) %>%
+  mutate(genre = gsub("^,|,$", "", genre)) %>% 
+  mutate(genre = gsub(",{2,}", ",", genre)) %>% 
+  mutate(genre = strsplit(genre, ",\\s*")) %>%
+  mutate(genre = lapply(genre, unique)) %>%
+  mutate(genre = sapply(genre, paste, collapse = ", ")) %>%
+  mutate(genre = gsub("^,", "", genre)) %>%
+  mutate(genre = ifelse(genre == "", "Other", genre)) %>%
+  mutate(genre = str_replace_all(genre, "\\s+", ""))
+
+
+```
+
 # Creating dataset for descriptive analysis
 *Later for the descriptive analysis I have to create a data set that also includes all competitors. At this step the competitor data is cleaned and still complete. So I remove the columns that I do not need for the descriptive analysis and keep only the distinct rows to end up with the cleaned dataset for all platforms. I also write this data set to a csv to store it on my laptop to use it for the analysis later*
 ```{r}
-all_platforms_cleaned <- video_information_all_platforms_cleaned %>%
-  select(!rank) %>%
-  select(!exclusive) %>%
-  select(!cumulative_rank) %>%
-  select(!week_num) %>%
-  distinct()
+video_information_all_platforms_cleaned_test$platform[video_information_all_platforms_cleaned_test$platform == 'Amazon'] <- 'Amazon Prime'
 
-all_platforms_cleaned$platform[all_platforms_cleaned$platform == 'Amazon'] <- 'Amazon Prime'
-
-write.csv(all_platforms_cleaned, "all_platforms_cleaned.csv")
+write.csv(video_information_all_platforms_cleaned_test, "C:/Users/Systeembeheer/OneDrive - Tilburg University/Documenten/Master/Marketing Analytics/Thesis/ThesisRob/ThesisRob/Datasets/Cleaned_data/all_platforms_cleaned.csv")
 ```
 
 # Splitting data
 *Now that the data set is cleaned I will split it up in a data set for all Netflix' videos and a data set for all the competitor videos.*
 ```{r}
 # create data set for Netflix' videos
-netflix_data_wide <- video_information_all_platforms_cleaned %>%
+netflix_data_wide <- video_information_all_platforms_cleaned_test %>%
   filter(platform == "Netflix")
 head(netflix_data_wide)
 
 # creating data set for competitor videos. 
-competitor_data_wide <- video_information_all_platforms_cleaned %>%
+competitor_data_wide <- video_information_all_platforms_cleaned_test %>%
   filter(platform != "Netflix")
+
 head(competitor_data_wide)
   
 
@@ -265,6 +300,12 @@ head(competitor_data_wide)
 
 # Transforming competitor dataset
 *The competitor data set does not need much cleaning. The only things that will be used in this dataset are the genre and MPAA rating, specifically I will count the number of videos with a certain genre and mpaa rating in a given week, which will be used later in transforming the data. To count the number of videos with a certain genre or MPAA rating it is use full to transfer the data into a long format. Now I will use the pre-fix "genre_" and "mpaa_" to refer to all dummy columns that relate to these variables.*
+
+```{r}
+competitor_data_wide <- competitor_data_wide %>%
+  select(-c(10:36))
+```
+
 
 ```{r}
 # convert genre and MPAA rating dummy variables to long format
@@ -281,8 +322,13 @@ head(competitor_long)
 
 ```{r}
 # creating a new dataset, which contains per genre and MPAA rating the total number of videos on competitor platforms (n) which contain that characteristic. 
-num_videos_week_comp <- competitor_long %>%
-  group_by(week_num, genre_mpaa) %>%
+num_videos_week_comp_genre <- competitor_data_wide %>%
+  group_by(week_num) %>%
+  count(genre) %>%
+  rename(genre_n = n)
+
+num_videos_week_comp_mpaa <- competitor_long %>%
+  group_by(week_num) %>%
   count(genre_mpaa)
 
 head(num_videos_week_comp)
@@ -353,7 +399,7 @@ netflix_data_cumulative_rank[6]
 ```{r}
 # convert genre and MPAA rating dummy variables to long format
 netflix_long <- netflix_data_cumulative_rank %>%
-  pivot_longer(cols = starts_with("genre_") | starts_with("mpaa_"), 
+  pivot_longer(cols = starts_with("mpaa_"), 
                names_to = "genre_mpaa",
                values_to = "value") %>%
   filter(value == 1)
@@ -382,12 +428,21 @@ head(netflix_long)
 *When the n column has an NA, than that means that during that week there were no competitor videos with a similar genre or MPAA rating. So I  change the NA's to zero's, meaning no competitor videos.*
 
 ```{r}
-netflix_merged_comp <- netflix_long %>%
+netflix_merged_comp_1 <- netflix_long %>%
   distinct() %>%
-  left_join(num_videos_week_comp, by = c("week_num", "genre_mpaa")) %>%
-  mutate(n = ifelse(is.na(n), 0, n))
+  left_join(num_videos_week_comp_mpaa, by = c("week_num", "genre_mpaa")) %>%
+  mutate(n_mpaa = ifelse(is.na(n), 0, n))
 head(netflix_merged_comp)
 ```
+
+```{r}
+netflix_merged_comp <- netflix_merged_comp_1 %>%
+  distinct() %>%
+  left_join(num_videos_week_comp_genre, by = c("week_num", "genre")) %>%
+  mutate(n_genre = ifelse(is.na(genre_n), 0, genre_n))
+head(netflix_merged_comp)
+```
+
 
 *now in this dataset every row stands for a genre or mpaa rating in a given week that a video was popular with at the end the number of videos with that same level of genre or mpaa rating.*
 
@@ -398,9 +453,8 @@ head(netflix_merged_comp)
 ```{r}
 # Calculating the avg number of competitor videos with certain genres during entire period on the Netflix top 10
 AVG_number_same_genre <- netflix_merged_comp %>%
-  filter(str_detect(genre_mpaa, "genre_")) %>%
   group_by(title.name, week_num) %>%
-  summarise(AVG_Ngenre_comp = sum(n)) %>%
+  summarise(AVG_Ngenre_comp = sum(n_genre)) %>%
   group_by(title.name) %>%
   summarise(AVG_Ngenre_comp = mean(AVG_Ngenre_comp)) 
 
@@ -428,6 +482,15 @@ netflix_merged <- netflix_long %>%
   left_join(AVG_number_same_genre, by = "title.name")
 ```
 
+
+```{r}
+# merge datasets together
+netflix_merged <- netflix_merged %>%
+  select(-c(11:37, 39))
+```
+
+
+
 # Transforming dataset to wide format again\
 # The dataset is now still in a long format. For my analysis I will transform it to a wide format again. Before I do this I first have to remove num_week, last_week_num and rank to make this work. These are also not relevant for the analysis and were nevertheless removed.
 
@@ -440,17 +503,10 @@ netflix_merged_without_week <- netflix_merged %>%
 
 # Transform dataset to wider format again
 netflix_merged_wider <- netflix_merged_without_week %>%
-  pivot_wider(names_from = genre_mpaa, values_from = value)
+  distinct()
 ```
 ## Removing dummy variables
 *Now that I have counted all movies, I will also remove the dummy variables for the genre and MPAA rating, because they are not needed anymore.*
-
-```{r}
-#Remove dummy columns
-netflix_merged_wider <- netflix_merged_wider %>%
-  select(!genre_Drama:genre_Western)
-```
-
 
 # Seasonality moderator
 
@@ -488,11 +544,7 @@ netflix_merged_wider <- netflix_merged_wider %>%
 
 
 # Exporting dataset to add sequel
-*The sequel will be added by hand because this can be not found on IMDB or Flixpatrol. So I have to export the dataset to manually add this column*
-```{r}
-write.csv(netflix_merged_wider, "netflix_merged_wider.csv", row.names = FALSE)
-```
-
+*The sequel will be added by hand because this can be not found on IMDB or Flixpatrol.*
 
 ```{r}
 netflix_sequel <- read.csv("C:/Users/Systeembeheer/OneDrive - Tilburg University/Documenten/Master/Marketing Analytics/Thesis/Thesis_R/netflix_merged_wider_vs2.csv", sep = ";")
@@ -516,12 +568,41 @@ netflix_data_complete <- netflix_merged_wider %>%
   select(!first_week_num)
 ```
 
-
-# Write final dataset to csv for analysis
 ```{r}
-write.csv(netflix_data_complete, "netflix_data_complete.csv")
+# dummy code genre
+netflix_data_complete <- netflix_data_complete %>% separate_rows(genre, sep = ',') %>% mutate(val = 1) %>% 
+  pivot_wider(names_from = genre, values_from = val, values_fill = list(val = 0)) 
+head(netflix_data_complete)
 ```
 
 
+```{r}
+# genres to keep
+
+# remove the unwanted genre dummy columns
+only_mpaa <- netflix_data_cumulative_rank %>%
+  select(c(3, mpaa_R_Restricted:mpaa_Not_Rated)) %>%
+  distinct()
+```
+
+```{r}
+# merge the two datasets on a common column
+netflix_data_complete <- merge(netflix_data_complete, only_mpaa, by.x = "title.name", by.y = "title.name")
+
+netflix_data_complete <- netflix_data_complete %>%
+  select(!value)
+```
+
+
+# Write final dataset to csv for analysis
+```{r}
+write.csv(netflix_data_complete, "C:/Users/Systeembeheer/OneDrive - Tilburg University/Documenten/Master/Marketing Analytics/Thesis/ThesisRob/ThesisRob/Datasets/Cleaned_data/netflix_data_complete.csv")
+
+```
+
+```{r}
+netflix_data_complete %>%
+  count(Other)
+```
 
 
