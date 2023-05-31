@@ -24,64 +24,63 @@ regressionData <- read.csv("C:/Users/Systeembeheer/OneDrive - Tilburg University
 #--- Creating interaction plot for genre variable ---#
 
 ```{r}
-#creating interaction plots
+pdf("plots/interaction_mpaa.pdf") 
 
-pdf("plots/interaction_genre.pdf") 
-# calculating mean and SD
-mean <- mean(regressionData$Holiday_distance)
-sd <- sd(regressionData$Holiday_distance)
+# Calculate mean and standard deviation of Holiday_distance
+mean_distance <- mean(regressionData$Holiday_distance)
+sd_distance <- sd(regressionData$Holiday_distance)
 
-# plot interactions
-regressionData$hd_level <- ifelse(regressionData$Holiday_distance > mean + sd, "+1SD Mean", 
-                           ifelse(regressionData$Holiday_distance < mean - sd, "-1SD Mean", "Mean"))
+# Calculate the thresholds for the three levels
+level_above_mean <- mean_distance + sd_distance
+level_below_mean <- mean_distance - sd_distance
 
-# Plotting parameters
-theme_set(theme_minimal())
-colors <- c("#E41A1C", "#377EB8", "#4DAF4A")
+# Categorize Holiday_distance into three levels
+regressionData$Holiday_level <- cut(regressionData$Holiday_distance, breaks = c(-Inf, level_below_mean, level_above_mean, Inf),
+                                    labels = c("1 SD Below Mean", "Within 1 SD", "1 SD Above Mean"))
 
-# Plot interactions
-ggplot(regressionData, aes(x = AVG_Ngenre_comp, y = cumulative_rank, color = hd_level)) +
+# Plot the moderation effect
+plot <- ggplot(regressionData, aes(x = AVG_Nmpaa_comp, y = cumulative_rank, color = Holiday_level)) +
   geom_smooth(method = "lm", se = FALSE, size = 1.2, linetype = "dashed") +
-  labs(x = "Average amount of competitor genre videos",
-       y = "Cumulative Rank",
-       color = "Holiday Distance Level") +
-  scale_color_manual(values = colors) +
-  theme(plot.title = element_text(size = 16, face = "bold"),
-        axis.title = element_text(size = 14),
-        axis.text = element_text(size = 12),
-        legend.title = element_text(size = 12),
-        legend.text = element_text(size = 10),
-        legend.position = "bottom")
+  scale_color_manual(values = c("#6BAED6", "#FD8D3C", "#66CC99"),
+                     labels = c("1 SD Below Mean", "Within 1 SD", "1 SD Above Mean")) +
+  labs(x = "Average amount of competitor MPAA videos", y = "Cumulative rank in weeks",
+       color = "Holiday distance") +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  coord_cartesian(ylim = c(1, 5))  # Adjust the lower and upper limits of the y-axis as desired
+
+# Display the plot
+plot
 ```
 
-#--- Creating interaction plot for MPAA variable---#
+
+
 
 ```{r}
-#creating interaction plots
-pdf("plots/interaction_mpaa.pdf") 
-# calculating mean and SD
-mean <- mean(regressionData$Holiday_distance)
-sd <- sd(regressionData$Holiday_distance)
+pdf("plots/interaction_genre.pdf") 
 
+# Calculate mean and standard deviation of Holiday_distance
+mean_distance <- mean(regressionData$Holiday_distance)
+sd_distance <- sd(regressionData$Holiday_distance)
 
-# Plotting parameters
-theme_set(theme_minimal())
-colors <- c("#E41A1C", "#377EB8", "#4DAF4A")
+# Calculate the thresholds for the three levels
+level_above_mean <- mean_distance + sd_distance
+level_below_mean <- mean_distance - sd_distance
 
-# Plot interactions
-ggplot(regressionData, aes(x = AVG_Nmpaa_comp, y = cumulative_rank, color = hd_level)) +
+# Categorize Holiday_distance into three levels
+regressionData$Holiday_level <- cut(regressionData$Holiday_distance, breaks = c(-Inf, level_below_mean, level_above_mean, Inf),
+                                    labels = c("1 SD Below Mean", "Within 1 SD", "1 SD Above Mean"))
+
+# Plot the moderation effect
+plot <- ggplot(regressionData, aes(x = AVG_Ngenre_comp, y = cumulative_rank, color = Holiday_level)) +
   geom_smooth(method = "lm", se = FALSE, size = 1.2, linetype = "dashed") +
-  labs(x = "Average amount of competitor MPAA videos",
-       y = "Cumulative Rank",
-       color = "Holiday Distance Level") +
-  scale_color_manual(values = colors) +
-  theme(plot.title = element_text(size = 16, face = "bold"),
-        axis.title = element_text(size = 14),
-        axis.text = element_text(size = 12),
-        legend.title = element_text(size = 12),
-        legend.text = element_text(size = 10),
-        legend.position = "bottom")
+  scale_color_manual(values = c("#6BAED6", "#FD8D3C", "#66CC99")) +
+  labs(x = "Average amount of competitor genre videos", y = "Cumulative rank in weeks",
+       color = "Holiday distance") +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  coord_cartesian(ylim = c(1, 5))  # Adjust the lower and upper limits of the y-axis as desired
+
+# Display the plot
+plot
 ```
-
-
-
