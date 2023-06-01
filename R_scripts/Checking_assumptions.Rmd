@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+#--- Install packages ---#
 
 ```{r}
 install.packages("olsrr")
@@ -206,7 +207,7 @@ ols_plot_resid_stud(lmNetflix_log_2)
 *No value above threshold*
 
 
-# index plot to fiend high leverage points
+# Index plot to fiend high leverage points
 ```{r}
 pdf("plots/high_leverag1.pdf") 
 lv0 <- hatvalues(lmNetflix_log_2)
@@ -221,7 +222,7 @@ dev.off()
 ```
 *These values could be potential influential when the cutoff (p+1)/n is used. These are a lot*
 
-#Additional check 
+# Additional check 
 ```{r}
 pdf("plots/high_leverag_outliers.pdf") 
 ols_plot_resid_lev(lmNetflix_log_2)
@@ -250,7 +251,7 @@ badCd
 *25 observations as influential*
 
 
-# also checking with the DFFITS
+# DFFITS
 ```{r}
 pdf("plots/DFFITS.pdf") 
 
@@ -261,6 +262,7 @@ dev.off()
 *also 25 observations as influential*
 
 #--- Analysis without outliers ---#
+
 *remove three most influential*
 ```{r}
 model_clean <- update(lmNetflix_log_2, data = netflix_data_complete[-c(72, 269, 285), ])
@@ -294,7 +296,7 @@ plot(cooksd, pch=".", cex=2, main="Influential Obs by Cooks distance")  # plot c
 text(x=1:length(cooksd)+1, y=cooksd, labels=ifelse(cooksd>0.04, names(cooksd),""), col="red")
 dev.off() 
 ```
-
+#--- Write final dataset to csv ---#
 
 ```{r}
 write.csv(netflix_data_complete, "C:/Users/Systeembeheer/OneDrive - Tilburg University/Documenten/Master/Marketing Analytics/Thesis/ThesisRob/ThesisRob/Datasets/Cleaned_data/RegressionData.csv")

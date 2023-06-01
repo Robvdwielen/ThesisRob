@@ -9,12 +9,13 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+#--- Libraries and packages ---#
 ```{r}
 install.packages("vtable")
 library(vtable)
 ```
 
-# Loading in data sets
+#--- Loading datasets ---#
 
 ```{r}
 # Load in data set
@@ -26,7 +27,8 @@ netflix_data_complete <- read.csv("C:/Users/Systeembeheer/OneDrive - Tilburg Uni
 summary(netflix_data_complete)
 ```
 
-# Removing NA
+#--- Removing NA ---#
+
 *Somehow in the all platforms data set there are still three rows with NAs. These are removed from the data set*
 ```{r}
 #removing NA
@@ -38,10 +40,9 @@ all_platforms_cleaned <- all_platforms_cleaned %>%
 
 ```
 
+#--- Frequency statistics ---#
 
-# number of distinct videos for each platform
 ```{r}
-# Create a table of average ratings by platform
 number_platforms <- all_platforms_cleaned %>% 
   group_by(platform) %>% 
   summarize(count = n()) %>% 
@@ -67,7 +68,6 @@ colnames(all_platforms_cleaned)[13:20] <- Genre_columns
 
 
 ```
-
 
 ```{r}
 # Create a table of count of titles by genre
@@ -126,7 +126,7 @@ write.csv(all_platforms_genre_mpaa, "all_platforms_genre_mpaa.csv")
 ```
 
 
-# Get all the summary statistics
+#--- Summary statistics ---#
 *The formatting of the table will be done in MS Word*
 ```{r}
 #creating summary statistics file

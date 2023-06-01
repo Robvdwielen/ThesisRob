@@ -1,4 +1,4 @@
-"","title.name","title.link","exclusive","cumulative_rank","Type","rating","AVG_Nmpaa_comp","AVG_Ngenre_comp","Holiday_distance","sequel","Drama","Comedy","Family","Action","Sci.Fi","Suspense","Romance","Other","mpaa_R_Restricted","mpaa_G_General_audiences","mpaa_PG_Parental_guidance_suggested","mpaa_PG13_Parents_strongly_cautioned","mpaa_NC17_Adults_only","mpaa_Not_Rated"
+"","title.name","title.link","exclusive","cumulative_rank","Type","rating","AVG_Nmpaa_comp","AVG_Ngenre_comp","Holiday_distance","sequel","Drama","Comedy","Family","Action","Sci-Fi","Suspense","Romance","Other","mpaa_R_Restricted","mpaa_G_General_audiences","mpaa_PG_Parental_guidance_suggested","mpaa_PG13_Parents_strongly_cautioned","mpaa_NC17_Adults_only","mpaa_Not_Rated"
 "1","10,000 BC","flixpatrol.com/title/10000-bc/",0,1,1,5.1,61,2,1,0,1,0,0,1,0,0,0,0,0,0,1,1,0,0
 "2","12 Strong","flixpatrol.com/title/12-strong/",0,3,1,6.5,12.6666666666667,3.66666666666667,1,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0
 "3","17 Again","flixpatrol.com/title/17-again/",0,1,1,6.4,51,0,6,0,1,1,0,0,0,0,1,0,0,0,1,1,0,0
@@ -70,6 +70,7 @@
 "69","Cleaner","flixpatrol.com/title/cleaner-2020/",0,3,1,6.1,10,2.33333333333333,7,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0
 "70","Coach Carter","flixpatrol.com/title/coach-carter/",0,1,1,7.3,35,9,10,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0
 "71","Cobra Kai","flixpatrol.com/title/cobra-kai/",1,4,0,8.5,113.142857142857,0,1,1,1,1,0,1,0,0,0,0,0,0,1,1,0,0
+"72","Cocomelon","flixpatrol.com/title/cocomelon/",0,12,0,4.6,6.125,0.5,1,1,0,0,1,0,0,0,0,0,0,1,0,0,0,0
 "73","Collateral","flixpatrol.com/title/collateral/",0,1,1,7.5,12,2,8,0,1,0,0,1,0,1,0,0,1,0,0,0,0,0
 "74","Collision","flixpatrol.com/title/collision-2022/",1,1,1,7.5,27,5,2,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0
 "75","Conversations with a Killer: The Jeffrey Dahmer Tapes","flixpatrol.com/title/conversations-with-a-killer-the-jeffrey-dahmer-tapes/",1,2,0,7.3,17,2,7,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0
@@ -266,6 +267,7 @@
 "266","Shrek Forever After","flixpatrol.com/title/shrek-forever-after/",0,5,1,6.3,26.2,0,9,0,0,1,1,1,0,0,1,0,0,0,1,0,0,0
 "267","Side Effects","flixpatrol.com/title/side-effects/",0,1,1,7.1,7,2,0,0,1,0,0,0,0,1,0,0,1,0,0,0,0,0
 "268","Silverton Siege","flixpatrol.com/title/silverton-siege/",0,1,1,6.3,23,6,5,0,1,0,0,1,0,1,0,0,0,0,0,0,1,0
+"269","Sing 2","flixpatrol.com/title/sing-2/",0,20,1,7.4,23.15,7,2,1,0,1,1,1,0,0,0,0,0,0,1,0,0,0
 "270","Sins of Our Mother","flixpatrol.com/title/sins-of-our-mother/",1,2,0,7,35,2,10,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0
 "271","Slumberland","flixpatrol.com/title/slumberland/",1,2,1,6.7,28,0,1,0,0,1,1,1,0,0,0,0,0,0,1,0,0,0
 "272","Snack vs Chef","flixpatrol.com/title/snack-vs-chef/",1,2,0,5.4,26,8,2,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0
@@ -281,6 +283,7 @@
 "282","Stranger Things","flixpatrol.com/title/stranger-things/",1,16,0,8.7,30.0625,0.9375,1,1,1,0,0,0,1,1,0,0,0,0,0,1,0,0
 "283","Sweet Magnolias","flixpatrol.com/title/sweet-magnolias/",1,5,0,7.3,33.2,0.8,5,1,1,0,0,0,0,0,1,0,0,0,0,1,0,0
 "284","Tall Girl 2","flixpatrol.com/title/tall-girl-2/",1,2,1,4.7,21.5,0,6,1,1,1,1,0,0,0,1,0,0,0,1,0,0,0
+"285","Teenage Mutant Ninja Turtles","flixpatrol.com/title/teenage-mutant-ninja-turtles-2012/",0,1,0,7.9,63,2,0,0,0,1,1,1,1,0,0,0,0,0,1,1,0,0
 "286","Texas Chainsaw Massacre","flixpatrol.com/title/texas-chainsaw-massacre/",1,2,1,4.7,12.5,0,7,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0
 "287","That's Amor","flixpatrol.com/title/thats-amor/",1,1,1,5.3,25,0,8,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0
 "288","That's My Boy","flixpatrol.com/title/thats-my-boy/",0,1,1,5.5,16,2,5,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0

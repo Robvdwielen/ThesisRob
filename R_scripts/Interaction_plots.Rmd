@@ -9,6 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+#--- Loading libraries ---#
+
 ```{r}
 library(ggplot2)
 library(gridExtra)
@@ -26,19 +28,15 @@ regressionData <- read.csv("C:/Users/Systeembeheer/OneDrive - Tilburg University
 ```{r}
 pdf("plots/interaction_mpaa.pdf") 
 
-# Calculate mean and standard deviation of Holiday_distance
 mean_distance <- mean(regressionData$Holiday_distance)
 sd_distance <- sd(regressionData$Holiday_distance)
 
-# Calculate the thresholds for the three levels
 level_above_mean <- mean_distance + sd_distance
 level_below_mean <- mean_distance - sd_distance
 
-# Categorize Holiday_distance into three levels
 regressionData$Holiday_level <- cut(regressionData$Holiday_distance, breaks = c(-Inf, level_below_mean, level_above_mean, Inf),
                                     labels = c("1 SD Below Mean", "Within 1 SD", "1 SD Above Mean"))
 
-# Plot the moderation effect
 plot <- ggplot(regressionData, aes(x = AVG_Nmpaa_comp, y = cumulative_rank, color = Holiday_level)) +
   geom_smooth(method = "lm", se = FALSE, size = 1.2, linetype = "dashed") +
   scale_color_manual(values = c("#6BAED6", "#FD8D3C", "#66CC99"),
@@ -47,31 +45,26 @@ plot <- ggplot(regressionData, aes(x = AVG_Nmpaa_comp, y = cumulative_rank, colo
        color = "Holiday distance") +
   theme_minimal() +
   theme(legend.position = "bottom") +
-  coord_cartesian(ylim = c(1, 5))  # Adjust the lower and upper limits of the y-axis as desired
+  coord_cartesian(ylim = c(1, 5)) 
 
-# Display the plot
-plot
 ```
 
 
 
+#--- Creating interaction plot for genre variable ---#
 
 ```{r}
 pdf("plots/interaction_genre.pdf") 
 
-# Calculate mean and standard deviation of Holiday_distance
 mean_distance <- mean(regressionData$Holiday_distance)
 sd_distance <- sd(regressionData$Holiday_distance)
 
-# Calculate the thresholds for the three levels
 level_above_mean <- mean_distance + sd_distance
 level_below_mean <- mean_distance - sd_distance
 
-# Categorize Holiday_distance into three levels
 regressionData$Holiday_level <- cut(regressionData$Holiday_distance, breaks = c(-Inf, level_below_mean, level_above_mean, Inf),
                                     labels = c("1 SD Below Mean", "Within 1 SD", "1 SD Above Mean"))
 
-# Plot the moderation effect
 plot <- ggplot(regressionData, aes(x = AVG_Ngenre_comp, y = cumulative_rank, color = Holiday_level)) +
   geom_smooth(method = "lm", se = FALSE, size = 1.2, linetype = "dashed") +
   scale_color_manual(values = c("#6BAED6", "#FD8D3C", "#66CC99")) +
@@ -79,8 +72,5 @@ plot <- ggplot(regressionData, aes(x = AVG_Ngenre_comp, y = cumulative_rank, col
        color = "Holiday distance") +
   theme_minimal() +
   theme(legend.position = "bottom") +
-  coord_cartesian(ylim = c(1, 5))  # Adjust the lower and upper limits of the y-axis as desired
-
-# Display the plot
-plot
+  coord_cartesian(ylim = c(1, 5)) 
 ```

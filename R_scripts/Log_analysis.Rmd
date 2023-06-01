@@ -62,7 +62,7 @@ summary(model2)
 ``` 
 
 
-#--- Model 4 (with genres and mpaa) ---#
+#--- Model 3 (with genres and mpaa) ---#
 ```{r}
 
 model3 <- lm(log(cumulative_rank) ~ 
